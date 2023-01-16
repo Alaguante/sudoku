@@ -53,7 +53,7 @@ class TestFieldBasic(unittest.TestCase):
             [7, 8, 9]
         ]
 
-        self.assertEqual(empty_block, self.field.get_block(2, 3))
+        self.assertEqual(empty_block, self.field.get_block_for_position(2, 3))
 
         number = 1
         for i in range(1, 4):
@@ -61,7 +61,7 @@ class TestFieldBasic(unittest.TestCase):
                 self.field.set_number(j, i, number)
                 number += 1
 
-        self.assertEqual(block, self.field.get_block(2, 3))
+        self.assertEqual(block, self.field.get_block_for_position(2, 3))
 
     def test_get_block_start_pos(self):
         block_1_start_pos = (1, 1)
