@@ -12,12 +12,24 @@ class TestFieldBasic(unittest.TestCase):
         self.assertEqual(-1, self.field.get_number(1, 1))
         self.field.field[0][1] = 2
         self.assertEqual(2, self.field.get_number(2, 1))
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.get_number(1, 11)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.get_number(11, 1)
 
     def test_set_number(self):
         self.field.set_number(1, 1, 1)
         self.assertEqual(1, self.field.get_number(1, 1))
         self.field.set_number(1, 3, 4)
         self.assertEqual(4, self.field.get_number(1, 3))
+        with self.assertRaisesRegex(sudokuField.NotAValidSudokuNumberException, "The number must be between 1 and 9"):
+            self.field.set_number(1, 1, 11)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.set_number(1, 11, 1)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.set_number(11, 1, 1)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.set_number(-3, 1, 1)
 
     def test_get_line(self):
         empty_line = [-1, -1, -1, -1, -1, -1, -1, -1, -1]
@@ -30,6 +42,11 @@ class TestFieldBasic(unittest.TestCase):
 
         self.assertEqual(line, self.field.get_line(1))
 
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.field.get_line(11)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.field.get_line(-3)
+
     def test_get_column(self):
         empty_column = [-1, -1, -1, -1, -1, -1, -1, -1, -1]
         line = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -41,7 +58,12 @@ class TestFieldBasic(unittest.TestCase):
 
         self.assertEqual(line, self.field.get_column(1))
 
-    def test_get_block(self):
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.field.get_column(11)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.field.get_column(-3)
+
+    def test_get_block_for_position(self):
         empty_block = [
             [-1, -1, -1],
             [-1, -1, -1],
@@ -63,6 +85,11 @@ class TestFieldBasic(unittest.TestCase):
 
         self.assertEqual(block, self.field.get_block_for_position(2, 3))
 
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.get_block_for_position(1, 11)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.get_block_for_position(11, 1)
+
     def test_get_block_start_pos(self):
         block_1_start_pos = (1, 1)
         block_2_start_pos = (4, 1)
@@ -73,14 +100,29 @@ class TestFieldBasic(unittest.TestCase):
 
         self.assertEqual(block_2_start_pos, sudokuField.get_block_start_pos(4, 3))
 
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            sudokuField.get_block_start_pos(11, 1)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            sudokuField.get_block_start_pos(1, 11)
+
     def test_set_as_org_number(self):
         self.field.set_as_org_number(1, 1)
         self.assertTrue(self.field.org_number_map[0][0])
+
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.set_as_org_number(11, 1)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.set_as_org_number(1, 11)
 
     def test_is_org_number(self):
         self.field.set_as_org_number(1, 1)
         self.assertTrue(self.field.is_org_number(1, 1))
         self.assertFalse(self.field.is_org_number(1, 2))
+
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.is_org_number(11, 1)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.field.is_org_number(1, 11)
 
 
 class TestFieldAdvanced(unittest.TestCase):
@@ -116,9 +158,19 @@ class TestFieldAdvanced(unittest.TestCase):
         self.assertTrue(self.valid_field.is_line_valid(1))
         self.assertFalse(self.not_valid_line_field.is_line_valid(1))
 
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.valid_field.is_line_valid(0)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.valid_field.is_line_valid(11)
+
     def test_is_column_valid(self):
         self.assertTrue(self.valid_field.is_column_valid(1))
         self.assertFalse(self.not_valid_column_field.is_column_valid(1))
+
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.valid_field.is_column_valid(0)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The index must be between 1 and 9"):
+            self.valid_field.is_column_valid(11)
 
     def test_is_block_valid(self):
         for i in range(1, 8, 3):
@@ -129,10 +181,20 @@ class TestFieldAdvanced(unittest.TestCase):
             for j in range(1, 8, 3):
                 self.assertFalse(self.not_valid_line_field.is_block_valid(j, i))
 
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.valid_field.is_block_valid(0, 10)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.valid_field.is_block_valid(10, 0)
+
     def test_is_pos_valid(self):
         self.assertTrue(self.valid_field.is_pos_valid(2, 3))
         self.assertFalse(self.not_valid_line_field.is_pos_valid(2, 3))
         self.assertFalse(self.not_valid_column_field.is_pos_valid(2, 3))
+
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.valid_field.is_pos_valid(0, 10)
+        with self.assertRaisesRegex(sudokuField.NotInPosRangeException, "The position must be between 1 and 9"):
+            self.valid_field.is_pos_valid(10, 0)
 
     def test_is_field_solved(self):
         self.assertTrue(self.valid_field.is_field_solved())
@@ -190,6 +252,11 @@ class TestFieldLoad(unittest.TestCase):
         self.field.load_field(file_path)
         self.assertEqual(self.valid_field.field, self.field.field)
 
+        with self.assertRaisesRegex(FileNotFoundError, "The provided path does not exist"):
+            self.field.load_field("test_data/Non_Existing_File")
+        with self.assertRaisesRegex(sudokuField.NotAFileError, "The provided path is not a file"):
+            self.field.load_field("test_data/")
+
     def test_load_file_in_constructor(self):
         file_path = "test_data/valid_sudoku.txt"
         loaded_field = Field(file_path)
@@ -198,6 +265,11 @@ class TestFieldLoad(unittest.TestCase):
         to_solve_file_path = "test_data/sudoku_to_solve.txt"
         to_solve_loaded_field = Field(to_solve_file_path)
         self.assertEqual(self.sudoku_field_to_solve.field, to_solve_loaded_field.field)
+
+        with self.assertRaisesRegex(FileNotFoundError, "The provided path does not exist"):
+            field = Field("test_data/Non_Existing_File")
+        with self.assertRaisesRegex(sudokuField.NotAFileError, "The provided path is not a file"):
+            field = Field("test_data/")
 
     def test_are_loaded_numbers_org_numbers(self):
         file_path = "test_data/valid_sudoku.txt"

@@ -1,3 +1,5 @@
+import os
+
 from multipledispatch import dispatch
 
 
@@ -29,6 +31,7 @@ def get_block_start(pos: int) -> int:
     :param pos: Position from 1 to 9.
     :return: Starting position of the block.
     """
+    check_if_pos_is_valid(pos)
     if pos <= 3:
         block_start = 1
     elif pos <= 6:
@@ -87,6 +90,30 @@ def does_list_not_contain_multiples(list_to_check: list) -> bool:
     :return: True if the list does not contain multiples, False otherwise.
     """
     return len(set(list_to_check)) >= len(list_to_check)
+
+
+def check_if_number_is_valid(number):
+    if number < 1 or number > 9:
+        raise NotAValidSudokuNumberException("The number must be between 1 and 9")
+
+
+@dispatch(int)
+def check_if_pos_is_valid(pos):
+    if pos < 1 or pos > 9:
+        raise NotInPosRangeException("The position must be between 1 and 9")
+
+
+@dispatch(int, int)
+def check_if_pos_is_valid(pos_x, pos_y):
+    if pos_x < 1 or pos_x > 9:
+        raise NotInPosRangeException("The position must be between 1 and 9")
+    if pos_y < 1 or pos_y > 9:
+        raise NotInPosRangeException("The position must be between 1 and 9")
+
+
+def check_if_index_is_valid(index):
+    if index < 1 or index > 9:
+        raise NotInPosRangeException("The index must be between 1 and 9")
 
 
 class Field:
@@ -150,6 +177,9 @@ class Field:
         :param pos_y: Y position from 1 to 9.
         :param number: The number to set.
         """
+        check_if_number_is_valid(number)
+        check_if_pos_is_valid(pos_x, pos_y)
+
         self.field[pos_y - 1][pos_x - 1] = number
 
     def get_number(self, pos_x: int, pos_y: int) -> int:
@@ -159,6 +189,7 @@ class Field:
         :param pos_y: Y position from 1 to 9.
         :return: The number in the given position
         """
+        check_if_pos_is_valid(pos_x, pos_y)
         return self.field[pos_y - 1][pos_x - 1]
 
     def get_line(self, index: int) -> list:
@@ -167,6 +198,7 @@ class Field:
         :param index: Index from 1 to 9.
         :return: A list of numbers (as ints) from the line.
         """
+        check_if_index_is_valid(index)
         return self.field[index - 1]
 
     def get_column(self, index: int) -> list:
@@ -175,6 +207,7 @@ class Field:
         :param index: Index from 1 to 9.
         :return: A list of numbers (ints) from the column
         """
+        check_if_index_is_valid(index)
         column = []
 
         for i in range(1, 10):
@@ -190,6 +223,7 @@ class Field:
         :param pos_y: Y position from 1 to 9.
         :return: A list containing lists containing the numbers (ints) of the block.
         """
+        check_if_pos_is_valid(pos_x, pos_y)
         block_start_pos_x = get_block_start_pos(pos_x, pos_y)[0]
         block_start_pos_y = get_block_start_pos(pos_x, pos_y)[1]
 
@@ -284,6 +318,10 @@ class Field:
         where # is an empty spot.
         :param file_path: The path to the file which shall be loaded.
         """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError("The provided path does not exist")
+        elif not os.path.isfile(file_path):
+            raise NotAFileError("The provided path is not a file")
         numbers = get_spots_from_file(file_path)
 
         self.load_numbers_into_field(numbers)
@@ -296,8 +334,8 @@ class Field:
         for i in range(1, 10):
             for j in range(1, 10):
                 current_number = numbers.pop(0)
-                self.set_number(j, i, current_number)
                 if 1 <= current_number <= 9:
+                    self.set_number(j, i, current_number)
                     self.set_as_org_number(j, i)
 
     def set_as_org_number(self, pos_x: int, pos_y: int) -> None:
@@ -307,6 +345,7 @@ class Field:
         :param pos_x: X position from 1 to 9.
         :param pos_y: Y position from 1 to 9.
         """
+        check_if_pos_is_valid(pos_x, pos_y)
         self.org_number_map[pos_y - 1][pos_x - 1] = True
 
     def is_org_number(self, pos_x: int, pos_y: int) -> bool:
@@ -316,6 +355,7 @@ class Field:
         :param pos_y: Y position from 1 to 9.
         :return: True if the number at the given position if an original number, False otherwise
         """
+        check_if_pos_is_valid(pos_x, pos_y)
         return self.org_number_map[pos_y - 1][pos_x - 1]
 
     def is_field_solved(self) -> bool:
@@ -360,11 +400,39 @@ class Field:
         :param pos_y: Y position from 1 to 9.
         :return: True if the position is considered valid, False otherwise
         """
-        if not self.is_line_valid(pos_y):
+        if not self.is_block_valid(pos_x, pos_y):
             return False
         elif not self.is_column_valid(pos_x):
             return False
-        elif not self.is_block_valid(pos_x, pos_y):
+        elif not self.is_line_valid(pos_y):
             return False
         else:
             return True
+
+
+class NotAValidSudokuNumberException(Exception):
+    """
+    Raised when the given number is not in the range of 1 to 9.
+    """
+    pass
+
+
+class NotInPosRangeException(Exception):
+    """
+    Raised when the given position is not in the range of 1 to 9.
+    """
+    pass
+
+
+class PathNotFoundError(Exception):
+    """
+    Raised when the given path is not found.
+    """
+    pass
+
+
+class NotAFileError(Exception):
+    """
+    Raised when the given path is not a file.
+    """
+    pass
