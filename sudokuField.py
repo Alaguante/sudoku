@@ -2,6 +2,8 @@ import os
 
 from multipledispatch import dispatch
 
+from Exceptions import NotAValidSudokuNumberException, NotInPosRangeException, NotAFileException
+
 
 def get_block_start_pos(pos_x: int, pos_y: int) -> tuple:
     """
@@ -321,7 +323,7 @@ class Field:
         if not os.path.exists(file_path):
             raise FileNotFoundError("The provided path does not exist")
         elif not os.path.isfile(file_path):
-            raise NotAFileError("The provided path is not a file")
+            raise NotAFileException("The provided path is not a file")
         numbers = get_spots_from_file(file_path)
 
         self.load_numbers_into_field(numbers)
@@ -410,29 +412,3 @@ class Field:
             return True
 
 
-class NotAValidSudokuNumberException(Exception):
-    """
-    Raised when the given number is not in the range of 1 to 9.
-    """
-    pass
-
-
-class NotInPosRangeException(Exception):
-    """
-    Raised when the given position is not in the range of 1 to 9.
-    """
-    pass
-
-
-class PathNotFoundError(Exception):
-    """
-    Raised when the given path is not found.
-    """
-    pass
-
-
-class NotAFileError(Exception):
-    """
-    Raised when the given path is not a file.
-    """
-    pass
